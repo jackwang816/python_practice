@@ -86,18 +86,34 @@ class LevenshteinDistance(object):
         return backtrace
 
     def _print_backtrace(self, str1: str, str2: str, backtrace:list) -> list:
-        pass
+        bt_list = []
+        for bt in backtrace:
+            if bt[2] == 'match':
+                bt_list.append('{} match'.format(str1[bt[0]]))
+            elif bt[2] == 'insertion':
+                bt_list.append('insert {}'.format(str2[bt[1]]))
+            elif bt[2] == 'deletion':
+                bt_list.append('delete {}'.format(str1[bt[0]]))
+            elif bt[2] == 'substitution':
+                bt_list.append('substitude {} with {}'.format(str1[bt[0]], str2[bt[1]]))
+            else:
+                bt_list.append('invalid move')
+        print('src string: {}'.format(str1))
+        print('dst string: {}'.format(str2))
+        print(', '.join(bt_list))
+
     def _print_state_matrix(self, state: list):
         for dp in state:
             print(dp)
+
     def dp_find_backtrace(self, str1: str, str2: str, do_print: bool = False):
         n, m = len(str1), len(str2)
         dp = [[0] * (m+1) for i in range(n+1)]
         self._dp_full_matrix(str1, str2, dp)
-        self._print_state_matrix(dp)
+        # self._print_state_matrix(dp)
         backtrace = self._dp_find_backtrace(dp, n, m)
         backtrace.reverse()
-        return print_backtrace(str1, str2, backtrace) if do_print else backtrace
+        return self._print_backtrace(str1, str2, backtrace) if do_print else backtrace
         
     def _dp_two_rows(self, str1:str, str2:str) -> int:
         n, m = len(str1), len(str2)
@@ -151,6 +167,16 @@ def test_two_rows(ldist):
     assert(ldist.solution('mnptq', 'abcd', DP_TWO_ROWS) == 5)
     assert(ldist.solution('abce', 'abcde', DP_TWO_ROWS) == 1)
 
+def test_print_backtrace(ldist):
+    ldist.dp_find_backtrace('', '', True)
+    ldist.dp_find_backtrace('a', '', True)
+    ldist.dp_find_backtrace('a', 'a', True)
+    ldist.dp_find_backtrace('', 'abc', True)
+    ldist.dp_find_backtrace('a', 'abcde', True)
+    ldist.dp_find_backtrace('mnpt', 'abcde', True)
+    ldist.dp_find_backtrace('mnptq', 'abcd', True)
+    ldist.dp_find_backtrace('abce', 'abcde', True)
+
 if __name__ == "__main__":
     ldist = LevenshteinDistance()
     try:
@@ -160,6 +186,7 @@ if __name__ == "__main__":
     test_recusive(ldist)
     test_dp_full_matrix(ldist)
     test_two_rows(ldist)
-    print(ldist.dp_find_backtrace('abce', 'abcde'))
-    print(ldist.dp_find_backtrace('a', ''))
+    test_print_backtrace(ldist)
+    # print(ldist.dp_find_backtrace('abce', 'abcde'))
+    # print(ldist.dp_find_backtrace('a', ''))
     
