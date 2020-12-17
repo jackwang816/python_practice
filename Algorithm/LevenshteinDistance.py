@@ -66,12 +66,15 @@ class LevenshteinDistance(object):
         if j-1 >= 0:
             comp_list.append((state[i][j-1], i, j-1, 'insertion'))
         if i-1 >= 0 and j-1 >= 0:
-            move = 'match' if state[i-1][j-1] == state[i][j] else 'substitution'
-            comp_list.append((state[i-1][j-1], i-1, j-1, move))
+            comp_list.append((state[i-1][j-1], i-1, j-1, 'substitution'))
         min_tuple = comp_list[0]
         for item in comp_list:
             if item[0] < min_tuple[0]:
                 min_tuple = item
+        # change move to match and use state[i-1][j-1] for state equal
+        # think about 'abce', 'abcde'
+        min_tuple = (state[i-1][j-1], i-1, j-1, 'match') \
+            if min_tuple[0] == state[i][j] else min_tuple
         return min_tuple[1], min_tuple[2], min_tuple[3]
 
     def _dp_find_backtrace(self, state: list, n: int, m: int) -> list:
