@@ -1,12 +1,14 @@
 RECURSIVE = 'recursive'
 BRUTE_FORCE = 'brute force'
 KADANE = 'kadane'
+DIVIDE_CONQUER = 'divide conquer'
 class MaxSubarray(object):
     def __init__(self):
         self.solution_dict = {
             RECURSIVE: self._recursive,
             BRUTE_FORCE: self._brute_force,
             KADANE: self._dp_kadane,
+            DIVIDE_CONQUER: self._divide_conquer,
         }
 
     def solution(self, nums: list, solution: str=RECURSIVE) -> int:
@@ -38,6 +40,8 @@ class MaxSubarray(object):
         """brute force solution
             Time Complexity: O(n^2)
         """
+        if n <= 0:
+            return 0
         max_sum = nums[0]
         for i in range(n):
             s = 0
@@ -46,7 +50,7 @@ class MaxSubarray(object):
                 max_sum = max(s, max_sum)
         return max_sum
 
-    def _dp_kadane(self, nums: list, n: int):
+    def _dp_kadane(self, nums: list, n: int) -> int:
         """ Kadane's solution
             loop invariant: local_max(i) = max(nums[i], local_max(i-1) + nums[i])
                             global_max = max(local_max(0:i))
@@ -62,16 +66,42 @@ class MaxSubarray(object):
             global_max = max(local_max, global_max)
         return global_max
 
-if __name__ == "__main__":
+    def _divide_conquer(self, nums: list, n: int) -> int:
+        """ divide and conquer solution
+            Time Complexity: O(nlogn)
+        """
+        if n <= 0:
+            return 0
+        if n == 1:
+            return nums[0]
+        mid, ml, mr = (n-1)//2, 0, 0
+        suml, sumr = 0, 0
+        for i in range(1, n-mid):
+            suml = suml + nums[mid-i] if mid-i > 0 else suml
+            sumr = sumr + nums[mid+i] if mid+i < n else sumr
+            ml = max(ml, suml)
+            mr = max(mr, sumr)
+        
+        return max(
+            nums[mid]+ml+mr,
+            self._divide_conquer(nums[0:mid], mid),
+            self._divide_conquer(nums[mid+1:n], n-mid-1)
+            )
+def test_max_subarray():
     maxsubarray = MaxSubarray()
-    test_list = [-2, 1, -3, 4, -1, 2, 1, -5, 4]
-    n = len(test_list)
-    # print(test_list[0:n-1])
-    # print(n)
-    # print(sum(test_list[0:1]))
-    # print(sum(test_list[n-1:n]))
-    # print(test_list[0:n])
-    print(maxsubarray.solution(test_list))
-    print(maxsubarray.solution(test_list, BRUTE_FORCE))
-    print(maxsubarray.solution(test_list, KADANE))
+    test_cases = [
+        ([-2, 1, -3, 4, -1, 2, 1, -5, 4], 6),
+        ([-1, 2, 3, -4, 5, 10], 16),
+        ([-2, -3, 4, -1, -2, 1, 5, -3], 7),
+        ([], 0),
+        ([0, 0, 0, 0, 0], 0),
+        ([2, 3, -1, -20, 5, 10], 15),
+    ]
+    for solution in maxsubarray.solution_dict:
+        print('Solution: {}'.format(solution))
+        for t in test_cases:
+            print(maxsubarray.solution(t[0], solution))
+            assert(maxsubarray.solution(t[0], solution) == t[1])
 
+if __name__ == "__main__":
+    test_max_subarray()
